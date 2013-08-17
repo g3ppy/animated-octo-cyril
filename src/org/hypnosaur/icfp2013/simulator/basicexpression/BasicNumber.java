@@ -88,23 +88,12 @@ public class BasicNumber {
         return prefix + number.toUpperCase();
     }
 
-//    public String toBinaryString() {
-//        String zeros = "00000000";
-//        String rez = "";
-//
-//        for (byte b : bytes) {
-//            String v = String.format("%s ", Integer.toBinaryString(b));
-//            if (v.length() > 8) {
-//                v = v.substring(v.length() - 9, v.length());
-//            }
-//            if (v.length() < 8) {
-//                v = zeros.substring(0, 8 - v.length() + 1) + v;
-//            }
-//            rez += v;
-//        }
-//
-//        return rez;
-//    }
+    public String toBinaryString() {
+        String internalToString = internalNumber.toString(2);
+        String prefix = "b ";
+        String number = "0000000000000000000000000000000000000000000000000000000000000000".substring(internalToString.length()) + internalToString;
+        return prefix + number;
+    }
 
 }
 
