@@ -1,92 +1,68 @@
 package org.hypnosaur.icfp2013.simulator.basicexpression;
 
-import java.util.Arrays;
+import com.google.common.primitives.UnsignedLong;
+import com.google.common.primitives.UnsignedLongs;
 
-/**
- * Created by kong
- * Time: 8/9/13 11:13 AM
- */
+import java.nio.ByteBuffer;
+import java.util.Objects;
+
 public class BasicNumber {
 
-    public static final BasicNumber ZERO = new BasicNumber(new byte[]{0, 0, 0, 0, 0, 0, 0, 0});
-    public static final BasicNumber ONE = new BasicNumber(new byte[]{0, 0, 0, 0, 0, 0, 0, 1});
+    public static final BasicNumber ZERO = new BasicNumber(0);
+    public static final BasicNumber ONE = new BasicNumber(1);
+    private final UnsignedLong internalNumber;
 
-    private final byte[] bytes;
-
-    public BasicNumber(byte[] bytes) {
-        this.bytes = bytes;
+    public BasicNumber(long number) {
+        this.internalNumber = UnsignedLong.fromLongBits(number);
     }
 
     public BasicNumber(String s) {
-        if (s.length() != 18) {
-            throw new NumberFormatException("Invalid number specified: " + s);
-        }
-        bytes = new byte[8];
-        for (int i = 0; i < 8; i++) {
-            String part = s.substring(2 + 2 * i, 2 + 2 * i + 2);
-            bytes[i] = (byte) (Integer.parseInt(part, 16) & 0xff);
-        }
+        this.internalNumber = UnsignedLong.fromLongBits(UnsignedLongs.decode(s));
     }
 
     public BasicNumber getByte(int idx) {
-        return new BasicNumber(new byte[]{0, 0, 0, 0, 0, 0, 0, bytes[7 - idx]});
-    }
-
-    public static BasicNumber parseLong(long l) {
-        byte[] bytes = new byte[8];
-        for (int f = 7; f >= 0; f--) {
-            bytes[f] = (byte) (l & 0xffL);
-            l >>>= 8;
-        }
-        return new BasicNumber(bytes);
+        byte[] byteArray = ByteBuffer.allocate(8).putLong(toLong()).array();
+        return new BasicNumber(0xFFL & byteArray[7 - idx]);
     }
 
     private long toLong() {
-        long l = bytes[0];
-        for (int f = 1; f < 8; f++)
-            l = (l << 8) | (bytes[f] & 0xFF);
-        return l;
+        return internalNumber.longValue();
     }
 
     public BasicNumber not() {
-        byte[] ret = new byte[8];
-        System.arraycopy(bytes, 0, ret, 0, 8);
-        for (int f = 0; f < 8; f++) {
-            ret[f] = (byte) ~ret[f];
-        }
-        return new BasicNumber(ret);
+        return new BasicNumber(~toLong());
     }
 
     public BasicNumber shl1() {
-        return parseLong(toLong() << 1);
+        return new BasicNumber(toLong() << 1);
     }
 
     public BasicNumber shr1() {
-        return parseLong(toLong() >>> 1);
+        return new BasicNumber(toLong() >>> 1);
     }
 
     public BasicNumber shr4() {
-        return parseLong(toLong() >>> 4);
+        return new BasicNumber(toLong() >>> 4);
     }
 
     public BasicNumber shr16() {
-        return parseLong(toLong() >>> 16);
+        return new BasicNumber(toLong() >>> 16);
     }
 
     public BasicNumber and(BasicNumber other) {
-        return parseLong(toLong() & other.toLong());
+        return new BasicNumber(toLong() & other.toLong());
     }
 
     public BasicNumber or(BasicNumber other) {
-        return parseLong(toLong() | other.toLong());
+        return new BasicNumber(toLong() | other.toLong());
     }
 
     public BasicNumber xor(BasicNumber other) {
-        return parseLong(toLong() ^ other.toLong());
+        return new BasicNumber(toLong() ^ other.toLong());
     }
 
     public BasicNumber plus(BasicNumber other) {
-        return parseLong(toLong() + other.toLong());
+        return new BasicNumber(toLong() + other.toLong());
     }
 
     @Override
@@ -96,40 +72,39 @@ public class BasicNumber {
 
         BasicNumber basicNumber = (BasicNumber) o;
 
-        return Arrays.equals(bytes, basicNumber.bytes);
+        return basicNumber.toLong() == this.toLong();
     }
 
     @Override
     public int hashCode() {
-        return Arrays.hashCode(bytes);
+        return Objects.hashCode(internalNumber);
     }
 
     @Override
     public String toString() {
-        String rez = "0x";
-        for (byte b : bytes) {
-            rez += String.format("%02X", b);
-        }
-        return rez;
+        String internalToString = internalNumber.toString(16);
+        String prefix = "0x";
+        String number = "0000000000000000".substring(internalToString.length()) + internalToString;
+        return prefix + number.toUpperCase();
     }
 
-    public String toBinaryString() {
-        String zeros = "00000000";
-        String rez = "";
-
-        for (byte b : bytes) {
-            String v = String.format("%s ", Integer.toBinaryString(b));
-            if (v.length() > 8) {
-                v = v.substring(v.length() - 9, v.length());
-            }
-            if (v.length() < 8) {
-                v = zeros.substring(0, 8 - v.length() + 1) + v;
-            }
-            rez += v;
-        }
-
-        return rez;
-    }
+//    public String toBinaryString() {
+//        String zeros = "00000000";
+//        String rez = "";
+//
+//        for (byte b : bytes) {
+//            String v = String.format("%s ", Integer.toBinaryString(b));
+//            if (v.length() > 8) {
+//                v = v.substring(v.length() - 9, v.length());
+//            }
+//            if (v.length() < 8) {
+//                v = zeros.substring(0, 8 - v.length() + 1) + v;
+//            }
+//            rez += v;
+//        }
+//
+//        return rez;
+//    }
 
 }
 
