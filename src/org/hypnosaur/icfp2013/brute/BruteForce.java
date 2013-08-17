@@ -9,6 +9,7 @@ import org.hypnosaur.icfp2013.simulator.unaryoperators.UnaryOperator;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -22,6 +23,15 @@ public class BruteForce {
     ArrayList<LinkedList<Expression>> tree;
     LinkedList<String> unaryOperators;
     LinkedList<String> binaryOperators;
+
+    Map<String, String> inputOutputs;
+
+
+    public BruteForce(Map<String, String> inputOutputs) {
+        this();
+
+        this.inputOutputs = inputOutputs;
+    }
 
     public BruteForce() {
         this.tree = new ArrayList<>();
